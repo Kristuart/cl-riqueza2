@@ -27,6 +27,10 @@ export default function Dashboard() {
         <div>
           <p className='font-semibold text-sm mb-1 mt-6'>LANÇAMENTOS</p>
           <button onClick={() => setTela('controle-vales')} className='block w-full text-left px-2 py-1 hover:bg-blue-700 rounded'>Controle de Vales</button>
+          <button onClick={() => setTela('lancar-vale')} className='block w-full text-left px-2 py-1 hover:bg-blue-700 rounded'>Lançar Vale</button>
+          <button onClick={() => setTela('excluir-vale')} className='block w-full text-left px-2 py-1 hover:bg-blue-700 rounded'>Excluir Vale</button>
+          <button onClick={() => setTela('lancar-desconto')} className='block w-full text-left px-2 py-1 hover:bg-blue-700 rounded'>Lançar Desconto</button>
+          <button onClick={() => setTela('pagamento-antecipado')} className='block w-full text-left px-2 py-1 hover:bg-blue-700 rounded'>Pagamento Antecipado</button>
         </div>
         <div>
           <p className='font-semibold text-sm mb-1 mt-6'>SAIR</p>
