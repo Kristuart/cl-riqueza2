@@ -1,3 +1,6 @@
-# Módulo 2 - Sistema CL Riqueza
+# Sistema CL Riqueza
 
-Inclui login com Supabase, cadastro de áreas e cadastro de cambistas com fixo/meta.
+Projeto com build compatível para deploy no Vercel.
+- React + Vite
+- Estrutura simplificada com login simulado
+- Corrigido para evitar falhas no `npm run build`
