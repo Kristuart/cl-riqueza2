@@ -12,7 +12,7 @@ export default function CadastroCambista() {
 
   useEffect(() => {
     async function fetchAreas() {
-      const { data } = await supabase.from('areas').select('*').order('nome', { ascending: true });
+      const { data } = await supabase.from('areas').select('*').order('codigo', { ascending: true });
       setAreas(data || []);
     }
     fetchAreas();
@@ -43,7 +43,7 @@ export default function CadastroCambista() {
         <select value={areaId} onChange={e => setAreaId(e.target.value)} className='border p-2 rounded'>
           <option value=''>Selecione uma área</option>
           {areas.map(area => (
-            <option key={area.id} value={area.nome}>{area.nome}</option>
+            <option key={area.id} value={area.codigo}>{area.codigo}</option>
           ))}
         </select>
         <div className='space-x-4'>

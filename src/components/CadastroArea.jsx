@@ -7,13 +7,13 @@ export default function CadastroArea() {
   const [areas, setAreas] = useState([]);
 
   async function buscarAreas() {
-    const { data } = await supabase.from('areas').select('*').order('nome', { ascending: true });
+    const { data } = await supabase.from('areas').select('*').order('codigo', { ascending: true });
     setAreas(data || []);
   }
 
   async function cadastrarArea() {
     if (!codigo) return;
-    await supabase.from('areas').insert([{ nome: codigo }] );
+    await supabase.from('areas').insert([{ codigo }] );
     setCodigo('');
     buscarAreas();
   }
@@ -41,7 +41,7 @@ export default function CadastroArea() {
         <h3 className='font-semibold mb-2'>Códigos cadastrados:</h3>
         <ul className='space-y-1'>
           {areas.map(area => (
-            <li key={area.id} className='border p-2 rounded bg-gray-50'>{area.nome}</li>
+            <li key={area.id} className='border p-2 rounded bg-gray-50'>{area.codigo}</li>
           ))}
         </ul>
       </div>
