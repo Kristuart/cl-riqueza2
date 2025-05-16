@@ -26,14 +26,14 @@ export default function ControleVales() {
   return (
     <div className='bg-gray-100 p-6 rounded shadow-md'>
       <h2 className='text-xl font-bold mb-4'>Controle de Vales</h2>
-      <ul className='space-y-3'>
+      <ul className='grid grid-cols-2 gap-2'>
         {cambistas.map(c => {
           const saldo = calcularSaldo(c.codigo);
           return (
-            <li key={c.codigo} className='bg-white p-4 rounded shadow flex justify-between items-center'>
+            <li key={c.codigo} className='bg-white px-3 py-2 rounded shadow text-sm flex justify-between items-center'>
               <span className='font-medium'>Código: {c.codigo}</span>
               <span className={saldo === 0 ? 'text-green-600 font-bold' : 'text-red-600 font-bold'}>
-                Saldo: R$ {saldo.toFixed(2)}
+                R$ {saldo.toFixed(2)}
               </span>
             </li>
           );
