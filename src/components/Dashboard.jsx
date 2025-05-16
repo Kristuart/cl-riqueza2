@@ -4,6 +4,10 @@ import CadastroArea from './CadastroArea';
 import CadastroCambista from './CadastroCambista';
 import TabelaMeta from './TabelaMeta';
 import ControleVales from './ControleVales';
+import LancarVale from './LancarVale';
+import ExcluirVale from './ExcluirVale';
+import LancarDesconto from './LancarDesconto';
+import PagamentoAntecipado from './PagamentoAntecipado';
 import { supabase } from '../lib/supabase';
 
 export default function Dashboard() {
@@ -42,6 +46,10 @@ export default function Dashboard() {
         {tela === 'cadastrar-cambista' && <CadastroCambista />}
         {tela === 'tabela-meta' && <TabelaMeta />}
         {tela === 'controle-vales' && <ControleVales />}
+        {tela === 'lancar-vale' && <LancarVale />}
+        {tela === 'excluir-vale' && <ExcluirVale />}
+        {tela === 'lancar-desconto' && <LancarDesconto />}
+        {tela === 'pagamento-antecipado' && <PagamentoAntecipado />}
       </main>
     </div>
   );
