@@ -1,6 +1,7 @@
-# Sistema CL Riqueza
+# Sistema CL Riqueza - Módulo 3
 
-Projeto com build compatível para deploy no Vercel.
-- React + Vite
-- Estrutura simplificada com login simulado
-- Corrigido para evitar falhas no `npm run build`
+Este módulo inclui:
+- Login
+- Dashboard com navegação
+- Cadastro de áreas
+- Cadastro de cambistas (fixo/meta)

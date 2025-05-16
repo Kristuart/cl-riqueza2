@@ -3,7 +3,9 @@ export default function Login({ onLogin }) {
   return (
     <div>
       <h2>Login</h2>
-      <button onClick={onLogin}>Entrar (simulado)</button>
+      <input type='email' placeholder='Email' />
+      <input type='password' placeholder='Senha' />
+      <button onClick={onLogin}>Entrar</button>
     </div>
   );
 }
