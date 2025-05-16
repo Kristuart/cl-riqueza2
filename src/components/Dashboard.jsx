@@ -1,0 +1,1 @@
+// Dashboard with buttons to register areas and cambistas

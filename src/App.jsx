@@ -1,3 +1,8 @@
+import React from 'react';
+import Login from './components/Login';
+import Dashboard from './components/Dashboard';
+
 export default function App() {
-  return <h1>Sistema CL Riqueza Iniciado</h1>;
+  const [loggedIn, setLoggedIn] = React.useState(false);
+  return loggedIn ? <Dashboard /> : <Login onLogin={() => setLoggedIn(true)} />;
 }
