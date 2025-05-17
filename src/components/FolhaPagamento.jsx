@@ -8,6 +8,8 @@ export default function FolhaPagamento() {
   const [areas, setAreas] = useState([]);
   const [cambistas, setCambistas] = useState([]);
   const [vendas, setVendas] = useState({});
+  const [vales, setVales] = useState({});
+  const [saldosVale, setSaldosVale] = useState({});
   const [dadosMeta, setDadosMeta] = useState([]);
 
   useEffect(() => {
@@ -16,7 +18,13 @@ export default function FolhaPagamento() {
       setAreas(areaData || []);
       const { data: metas } = await supabase.from('tabela_meta').select('*');
       setDadosMeta(metas || []);
-      console.warn('TABELA META CARREGADA:', metas);
+      const { data: valesData } = await supabase.from('vales').select('*');
+      const saldoMap = {};
+      valesData.forEach(v => {
+        if (!saldoMap[v.codigo]) saldoMap[v.codigo] = 0;
+        saldoMap[v.codigo] += parseFloat(v.valor);
+      });
+      setSaldosVale(saldoMap);
     }
     init();
   }, []);
@@ -26,20 +34,16 @@ export default function FolhaPagamento() {
     const salarioFixo = parseFloat(cambista.salario || 0);
     const minimo = parseFloat(cambista.salario_minimo || 0);
 
-    if (!dadosMeta || dadosMeta.length === 0) {
-      console.warn('⚠️ TABELA META VAZIA OU NÃO CARREGADA');
-      return salarioFixo;
-    }
+    if (!dadosMeta || dadosMeta.length === 0) return salarioFixo;
 
     if (cambista.tipo === 'fixo') return salarioFixo;
 
     if (cambista.tipo === 'meta' || cambista.tipo === 'fixo_meta') {
       const faixa = dadosMeta.find(m => {
-        const min = parseFloat(m.min);
-        const max = parseFloat(m.max);
+        const min = parseFloat(m.minimo);
+        const max = parseFloat(m.maximo);
         return venda >= min && venda <= max;
       });
-
       const valorMeta = faixa ? parseFloat(faixa.valor) : 0;
       if (cambista.tipo === 'meta') return valorMeta;
       return Math.max(valorMeta, minimo);
@@ -77,12 +81,18 @@ export default function FolhaPagamento() {
                 <th className='p-2'>Venda</th>
                 <th className='p-2'>Tipo</th>
                 <th className='p-2'>Salário</th>
+                <th className='p-2'>Saldo Vale</th>
+                <th className='p-2'>Vale Lançado</th>
+                <th className='p-2'>Líquido</th>
               </tr>
             </thead>
             <tbody>
               {cambistas.map(c => {
                 const venda = vendas[c.codigo] || '';
                 const salario = getSalario(c, venda);
+                const saldoVale = saldosVale[c.codigo] || 0;
+                const valeLancado = parseFloat((vales[c.codigo] || '0').replace(',', '.')) || 0;
+                const liquido = salario - valeLancado;
                 return (
                   <tr key={c.codigo}>
                     <td className='border p-2'>{c.codigo}</td>
@@ -97,6 +107,16 @@ export default function FolhaPagamento() {
                     </td>
                     <td className='border p-2'>{c.tipo}</td>
                     <td className='border p-2 font-bold'>R$ {salario.toFixed(2)}</td>
+                    <td className={`border p-2 font-bold ${saldoVale > 0 ? 'text-red-600' : 'text-green-600'}`}>R$ {saldoVale.toFixed(2)}</td>
+                    <td className='border p-2'>
+                      <input
+                        type='text'
+                        className='border rounded p-1 w-24'
+                        value={vales[c.codigo] || ''}
+                        onChange={e => setVales({ ...vales, [c.codigo]: e.target.value })}
+                      />
+                    </td>
+                    <td className='border p-2 font-bold'>R$ {liquido.toFixed(2)}</td>
                   </tr>
                 );
               })}
