@@ -8,21 +8,18 @@ export default function FolhaPagamento() {
   const [areas, setAreas] = useState([]);
   const [cambistas, setCambistas] = useState([]);
   const [vendas, setVendas] = useState({});
-  const [valesLançados, setValesLançados] = useState({});
-  const [saldosVale, setSaldosVale] = useState({});
+  const [vales, setVales] = useState({});
   const [dadosMeta, setDadosMeta] = useState([]);
   const [descontosPendentes, setDescontosPendentes] = useState({});
   const [usuario, setUsuario] = useState('');
-  const [folhaGerada, setFolhaGerada] = useState([]);
+  const [saldosVale, setSaldosVale] = useState({});
 
   useEffect(() => {
     async function init() {
       const { data: areaData } = await supabase.from('areas').select('*');
       setAreas(areaData || []);
-
       const { data: metas } = await supabase.from('tabela_meta').select('*');
       setDadosMeta(metas || []);
-
       const { data: user } = await supabase.auth.getUser();
       setUsuario(user?.user?.email || '');
     }
@@ -50,51 +47,90 @@ export default function FolhaPagamento() {
     setSaldosVale(saldos);
   };
 
-  
   const getSalario = (cambista, vendaRaw) => {
     const venda = parseFloat((vendaRaw || '').toString().replace(',', '.')) || 0;
     const salarioFixo = parseFloat(cambista.salario || 0);
     const minimo = parseFloat(cambista.salario_minimo || 0);
-
     if (cambista.tipo === 'fixo') return salarioFixo;
-
     if (cambista.tipo === 'meta' || cambista.tipo === 'fixo_meta') {
       const faixa = dadosMeta.find(m => {
         const min = parseFloat(m.min);
         const max = parseFloat(m.max);
-          return venda >= min && venda <= max;
+        return venda >= min && venda <= max;
       });
       const valorMeta = faixa ? parseFloat(faixa.valor) : 0;
       if (cambista.tipo === 'meta') return valorMeta;
-        return Math.max(valorMeta, minimo);
+      return Math.max(valorMeta, minimo);
     }
-
-      return 0;
+    return 0;
   };
 
-    if (cambista.tipo === 'fixo') return parseFloat(cambista.salario || 0);
-    if (cambista.tipo === 'meta') {
-      const valorMeta = dadosMeta.find(m => venda >= m.min && venda <= m.max);
-        return valorMeta ? parseFloat(valorMeta.valor) : 0;
+  const visualizarFolha = () => {
+    const folha = cambistas.map(c => calcularLinha(c));
+    const totalLiquido = folha.reduce((acc, item) => acc + item.liquido, 0);
+    const html = `
+      <html>
+        <head>
+          <title>Folha de Pagamento - ${areaSelecionada}</title>
+          <style>
+            body { font-family: Arial, sans-serif; background: #fff; color: #000; padding: 20px; }
+            table { width: 100%; border-collapse: collapse; }
+            th, td { border: 1px solid #000; padding: 6px; }
+            th { background: #eee; }
+          </style>
+        </head>
+        <body>
+          <h2>Folha de Pagamento - Área ${areaSelecionada} (${dataDezena})</h2>
+          <table>
+            <thead>
+              <tr>
+                <th>Código</th>
+                <th>Nome</th>
+                <th>Salário</th>
+                <th>Vale</th>
+                <th>Desconto</th>
+                <th>Líquido</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${folha.map(f => `
+                <tr>
+                  <td>${f.codigo}</td>
+                  <td>${f.nome}</td>
+                  <td>R$ ${f.salario.toFixed(2)}</td>
+                  <td>R$ ${f.vale_lancado.toFixed(2)}</td>
+                  <td>R$ ${f.desconto.toFixed(2)}</td>
+                  <td>R$ ${f.liquido.toFixed(2)}</td>
+                </tr>`).join('')}
+            </tbody>
+            <tfoot>
+              <tr>
+                <td colspan="5"><strong>Total líquido da área:</strong></td>
+                <td>R$ ${totalLiquido.toFixed(2)}</td>
+              </tr>
+            </tfoot>
+          </table>
+        </body>
+      </html>`;
+    const win = window.open('', '_blank');
+    if (win) {
+      win.document.write(html);
+      win.document.close();
+    } else {
+      alert("Permita pop-ups para visualizar a folha.");
     }
-    if (cambista.tipo === 'fixo_meta') {
-      const valorMeta = dadosMeta.find(m => venda >= m.min && venda <= m.max);
-      const valorMetaNum = valorMeta ? parseFloat(valorMeta.valor) : 0;
-        return Math.max(valorMetaNum, parseFloat(cambista.salario_minimo || 0));
-    }
-      return 0;
   };
 
   const calcularLinha = (c) => {
     const vendaRaw = vendas[c.codigo] || '0';
-    const valeRaw = valesLançados[c.codigo] || '0';
+    const valeRaw = vales[c.codigo] || '0';
     const venda = parseFloat(vendaRaw.replace(',', '.')) || 0;
     const vale = parseFloat(valeRaw.replace(',', '.')) || 0;
     const salario = getSalario(c, venda);
     const desconto = descontosPendentes[c.codigo] || 0;
     const saldoValeAtual = saldosVale[c.codigo] || 0;
     const liquido = salario - vale - desconto;
-      return {
+    return {
       codigo: c.codigo,
       nome: c.nome,
       tipo_pagamento: c.tipo,
@@ -107,25 +143,8 @@ export default function FolhaPagamento() {
     };
   };
 
-  const gerarFolha = () => {
-    const folha = cambistas.map(c => calcularLinha(c));
-    setFolhaGerada(folha);
-  };
-
-  const registrarFolha = async () => {
-    const payload = folhaGerada.map(f => ({
-      ...f,
-      area: areaSelecionada,
-      data_dezena: dataDezena,
-      registrado_em: new Date(),
-      usuario
-    }));
-    const { error } = await supabase.from('folhas_pagamento').insert(payload);
-    if (!error) alert("Folha registrada com sucesso!");
-  };
-
-    return (
-    <div className='bg-gray-100 p-6 rounded shadow-md'>
+  return (
+    <div className='bg-white p-6 rounded shadow'>
       <h2 className='text-xl font-bold mb-4'>Folha de Pagamento</h2>
       <div className='flex flex-col md:flex-row gap-4 mb-4'>
         <select className='border p-2 rounded w-full md:w-1/3' value={areaSelecionada} onChange={e => setAreaSelecionada(e.target.value)}>
@@ -158,7 +177,7 @@ export default function FolhaPagamento() {
               <tbody>
                 {cambistas.map(c => {
                   const dados = calcularLinha(c);
-                    return (
+                  return (
                     <tr key={c.codigo}>
                       <td className='border p-2'>{c.codigo}</td>
                       <td className='border p-2'>{c.nome}</td>
@@ -169,7 +188,7 @@ export default function FolhaPagamento() {
                       <td className='border p-2'>R$ {dados.salario.toFixed(2)}</td>
                       <td className={`border p-2 font-bold ${dados.saldo_vale > 0 ? 'text-red-600' : 'text-green-600'}`}>R$ {dados.saldo_vale.toFixed(2)}</td>
                       <td className='border p-2'>
-                        <input type='text' className='border rounded p-1 w-24' value={valesLançados[c.codigo] || ''} onChange={e => setValesLançados({ ...valesLançados, [c.codigo]: e.target.value })} />
+                        <input type='text' className='border rounded p-1 w-24' value={vales[c.codigo] || ''} onChange={e => setVales({ ...vales, [c.codigo]: e.target.value })} />
                       </td>
                       <td className='border p-2'>R$ {dados.desconto.toFixed(2)}</td>
                       <td className='border p-2 font-bold'>R$ {dados.liquido.toFixed(2)}</td>
@@ -180,8 +199,7 @@ export default function FolhaPagamento() {
             </table>
           </div>
           <div className='mt-4 flex justify-between'>
-            <button className='bg-green-600 text-white px-4 py-2 rounded' onClick={gerarFolha}>Gerar Folha</button>
-            <button className='bg-black text-white px-4 py-2 rounded' onClick={registrarFolha}>Registrar e Imprimir</button>
+            <button className='bg-black text-white px-4 py-2 rounded' onClick={visualizarFolha}>Visualizar Folha</button>
           </div>
         </>
       )}
