@@ -3,8 +3,8 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 
 export default function FolhaPagamento() {
-  // Dados simulados (resumido)
-  // ... estados omitidos por brevidade
+  // Simulação dos estados e hooks (omitidos para foco na função principal)
+  // Aqui você teria: vendas, vales, descontos, cambistas, áreas, etc.
 
   const imprimirERegistrar = async () => {
     if (!window.confirm('Deseja realmente registrar e imprimir a folha da dezena selecionada?')) return;
@@ -13,7 +13,6 @@ export default function FolhaPagamento() {
     const totalLiquido = linhas.reduce((acc, l) => acc + l.liquido, 0);
 
     for (let l of linhas) {
-      // 1. Registrar folha
       await supabase.from('folha_pagamento').insert({
         codigo: l.codigo,
         nome: l.nome,
@@ -25,7 +24,6 @@ export default function FolhaPagamento() {
         liquido: l.liquido
       });
 
-      // 2. Abater vale parcialmente
       let { data: vales } = await supabase.from('vales').select('*').eq('codigo', l.codigo).order('data');
       let restante = l.valeLancado;
       for (let v of vales) {
@@ -40,7 +38,6 @@ export default function FolhaPagamento() {
         }
       }
 
-      // 3. Abater desconto parcialmente
       let { data: descontos } = await supabase.from('descontos').select('*').eq('codigo', l.codigo).order('data');
       let restanteDesc = l.desconto;
       for (let d of descontos) {
@@ -56,7 +53,6 @@ export default function FolhaPagamento() {
       }
     }
 
-    // Visualizar layout impressão
     const html = `<html><head><title>Impressão</title><style>body{font-family:Arial;padding:20px;}table{width:100%;border-collapse:collapse;}th,td{border:1px solid #000;padding:6px;}</style></head><body>
       <h2>CL Riqueza - Área ${areaSelecionada} (${dataDezena})</h2><table><thead><tr><th>Código</th><th>Nome</th><th>Salário</th><th>Vale</th><th>Desconto</th><th>Líquido</th></tr></thead><tbody>
       ${linhas.map(l => `<tr><td>${l.codigo}</td><td>${l.nome}</td><td>R$ ${l.salario.toFixed(2)}</td><td>R$ ${l.valeLancado.toFixed(2)}</td><td>R$ ${l.desconto.toFixed(2)}</td><td>R$ ${l.liquido.toFixed(2)}</td></tr>`).join('')}
@@ -68,5 +64,12 @@ export default function FolhaPagamento() {
     win.document.close();
   };
 
-  return <div className='p-4'>... Botões e tabela ...</div>
+  return (
+    <div className='bg-white p-6 rounded shadow'>
+      <h2 className='text-xl font-bold mb-4'>Folha de Pagamento</h2>
+      {/* Aqui virá toda a tabela funcional com inputs e campos conforme versão validada */}
+      {/* Vendas, tipos de pagamento, salário, saldo de vale, descontos, botão de Visualizar e Imprimir */}
+      <button onClick={imprimirERegistrar} className='mt-4 bg-black text-white px-4 py-2 rounded'>Imprimir e Registrar</button>
+    </div>
+  );
 }
