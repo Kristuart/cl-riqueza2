@@ -221,37 +221,60 @@ export default function FolhaPagamento() {
             </tbody>
           </table>
         </div>
-
         <div className='mt-4 flex justify-end gap-2'>
-          <button className='bg-gray-700 text-white px-4 py-2 rounded' onClick={() => {
-            const linhas = cambistas.map(c => calcularLinha(c));
-            const totalLiquido = linhas.reduce((acc, l) => acc + l.liquido, 0);
-            const html = `
-              <html><head><title>Visualizar Folha</title>
-              <style>body{font-family:Arial,sans-serif;padding:20px;}table{width:100%;border-collapse:collapse;margin-top:20px;}th,td{border:1px solid #000;padding:8px;text-align:left;}th{background:#eee;}</style>
-              </head><body>
-              <h2>CL Riqueza - Área ${areaSelecionada} (${dataDezena})</h2>
-              <table><thead><tr>
-              <th>Código</th><th>Nome</th><th>Salário</th><th>Vale</th><th>Desconto</th><th>Líquido</th>
-              </tr></thead><tbody>
-              ${linhas.map(l => `
-              <tr>
-              <td>${l.codigo}</td><td>${l.nome}</td>
-              <td>R$ ${l.salario.toFixed(2)}</td><td>R$ ${l.valeLancado.toFixed(2)}</td>
-              <td>R$ ${l.desconto.toFixed(2)}</td><td>R$ ${l.liquido.toFixed(2)}</td>
-              </tr>`).join('')}
-              <tr><td colspan="5"><strong>Total líquido da área:</strong></td><td><strong>R$ ${totalLiquido.toFixed(2)}</strong></td></tr>
-              </tbody></table></body></html>`;
-            const newWin = window.open('', '_blank');
-            newWin.document.write(html);
-            newWin.document.close();
-          }}>
-            Visualizar Folha
-          </button>
-          <button className='bg-black text-white px-4 py-2 rounded' onClick={imprimirERegistrar}>
-            Imprimir e Registrar
-          </button>
-        </div>
+
+<button className='bg-gray-700 text-white px-4 py-2 rounded' onClick={() => {
+  const linhas = cambistas.map(c => calcularLinha(c));
+  const totalLiquido = linhas.reduce((acc, l) => acc + l.liquido, 0);
+  const tabela = linhas.map(l => `
+    <tr>
+      <td>${l.codigo}</td>
+      <td>${l.nome}</td>
+      <td>R$ ${l.salario.toFixed(2)}</td>
+      <td>R$ ${l.valeLancado.toFixed(2)}</td>
+      <td>R$ ${l.desconto.toFixed(2)}</td>
+      <td>R$ ${l.liquido.toFixed(2)}</td>
+    </tr>`).join('');
+  const html = `
+    <html>
+    <head>
+      <title>Visualizar Folha</title>
+      <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #000; padding: 8px; text-align: left; }
+        th { background-color: #eee; }
+      </style>
+    </head>
+    <body>
+      <h2>CL Riqueza - Área ${areaSelecionada} (${dataDezena})</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Código</th>
+            <th>Nome</th>
+            <th>Salário</th>
+            <th>Vale</th>
+            <th>Desconto</th>
+            <th>Líquido</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${tabela}
+          <tr>
+            <td colspan="5"><strong>Total líquido da área:</strong></td>
+            <td><strong>R$ ${totalLiquido.toFixed(2)}</strong></td>
+          </tr>
+        </tbody>
+      </table>
+    </body>
+    </html>`;
+  const newWin = window.open('', '_blank');
+  newWin.document.write(html);
+  newWin.document.close();
+}}>
+  Visualizar Folha
+</button>
 
           <button className='bg-black text-white px-4 py-2 rounded' onClick={imprimirERegistrar}>
             Imprimir e Registrar
