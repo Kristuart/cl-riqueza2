@@ -8,7 +8,8 @@ export default function FolhaPagamento() {
   const [areas, setAreas] = useState([]);
   const [cambistas, setCambistas] = useState([]);
   const [vendas, setVendas] = useState({});
-  const [vales, setVales] = useState({});
+  const [valesLançados, setValesLançados] = useState({});
+  const [saldosVale, setSaldosVale] = useState({});
   const [dadosMeta, setDadosMeta] = useState([]);
   const [descontosPendentes, setDescontosPendentes] = useState({});
   const [usuario, setUsuario] = useState('');
@@ -39,6 +40,14 @@ export default function FolhaPagamento() {
       descontosMap[d.codigo] += parseFloat(d.valor);
     }
     setDescontosPendentes(descontosMap);
+
+    const { data: valesData } = await supabase.from('vales').select('*');
+    const saldos = {};
+    for (let v of valesData) {
+      if (!saldos[v.codigo]) saldos[v.codigo] = 0;
+      saldos[v.codigo] += parseFloat(v.valor);
+    }
+    setSaldosVale(saldos);
   };
 
   const getSalario = (cambista, venda) => {
@@ -56,12 +65,25 @@ export default function FolhaPagamento() {
   };
 
   const calcularLinha = (c) => {
-    const venda = parseFloat(vendas[c.codigo]) || 0;
-    const vale = parseFloat(vales[c.codigo]) || 0;
+    const vendaRaw = vendas[c.codigo] || '0';
+    const valeRaw = valesLançados[c.codigo] || '0';
+    const venda = parseFloat(vendaRaw.replace(',', '.')) || 0;
+    const vale = parseFloat(valeRaw.replace(',', '.')) || 0;
     const salario = getSalario(c, venda);
     const desconto = descontosPendentes[c.codigo] || 0;
+    const saldoValeAtual = saldosVale[c.codigo] || 0;
     const liquido = salario - vale - desconto;
-    return { codigo: c.codigo, nome: c.nome, tipo_pagamento: c.tipo, venda, salario, vale_lancado: vale, desconto, liquido: Math.max(liquido, 0) };
+    return {
+      codigo: c.codigo,
+      nome: c.nome,
+      tipo_pagamento: c.tipo,
+      venda,
+      salario,
+      vale_lancado: vale,
+      desconto,
+      saldo_vale: saldoValeAtual,
+      liquido: Math.max(liquido, 0)
+    };
   };
 
   const gerarFolha = () => {
@@ -106,7 +128,8 @@ export default function FolhaPagamento() {
                   <th className='p-2'>Venda</th>
                   <th className='p-2'>Tipo</th>
                   <th className='p-2'>Salário</th>
-                  <th className='p-2'>Vale</th>
+                  <th className='p-2'>Saldo Vale</th>
+                  <th className='p-2'>Vale Lançado</th>
                   <th className='p-2'>Desconto</th>
                   <th className='p-2'>Líquido</th>
                 </tr>
@@ -119,12 +142,13 @@ export default function FolhaPagamento() {
                       <td className='border p-2'>{c.codigo}</td>
                       <td className='border p-2'>{c.nome}</td>
                       <td className='border p-2'>
-                        <input type='number' className='border rounded p-1 w-24' value={vendas[c.codigo] || ''} onChange={e => setVendas({ ...vendas, [c.codigo]: e.target.value })} />
+                        <input type='text' className='border rounded p-1 w-24' value={vendas[c.codigo] || ''} onChange={e => setVendas({ ...vendas, [c.codigo]: e.target.value })} />
                       </td>
                       <td className='border p-2'>{c.tipo}</td>
                       <td className='border p-2'>R$ {dados.salario.toFixed(2)}</td>
+                      <td className={`border p-2 font-bold ${dados.saldo_vale > 0 ? 'text-red-600' : 'text-green-600'}`}>R$ {dados.saldo_vale.toFixed(2)}</td>
                       <td className='border p-2'>
-                        <input type='number' className='border rounded p-1 w-24' value={vales[c.codigo] || ''} onChange={e => setVales({ ...vales, [c.codigo]: e.target.value })} />
+                        <input type='text' className='border rounded p-1 w-24' value={valesLançados[c.codigo] || ''} onChange={e => setValesLançados({ ...valesLançados, [c.codigo]: e.target.value })} />
                       </td>
                       <td className='border p-2'>R$ {dados.desconto.toFixed(2)}</td>
                       <td className='border p-2 font-bold'>R$ {dados.liquido.toFixed(2)}</td>
