@@ -52,26 +52,20 @@ export default function FolhaPagamento() {
 
   
   const getSalario = (cambista, vendaRaw) => {
-    const venda = parseFloat(String(vendaRaw).replace(',', '.')) || 0;
-    if (cambista.tipo === 'fixo') return parseFloat(cambista.salario || 0);
+    const venda = parseFloat((vendaRaw || '').toString().replace(',', '.')) || 0;
+    const salarioFixo = parseFloat(cambista.salario || 0);
+    const minimo = parseFloat(cambista.salario_minimo || 0);
 
-    if (cambista.tipo === 'meta') {
-      const faixa = dadosMeta.find(m => {
-        const min = parseFloat(m.min);
-        const max = parseFloat(m.max);
-        return venda >= min && venda <= max;
-      });
-      return faixa ? parseFloat(faixa.valor) : 0;
-    }
+    if (cambista.tipo === 'fixo') return salarioFixo;
 
-    if (cambista.tipo === 'fixo_meta') {
+    if (cambista.tipo === 'meta' || cambista.tipo === 'fixo_meta') {
       const faixa = dadosMeta.find(m => {
         const min = parseFloat(m.min);
         const max = parseFloat(m.max);
         return venda >= min && venda <= max;
       });
       const valorMeta = faixa ? parseFloat(faixa.valor) : 0;
-      const minimo = parseFloat(cambista.salario_minimo || 0);
+      if (cambista.tipo === 'meta') return valorMeta;
       return Math.max(valorMeta, minimo);
     }
 
