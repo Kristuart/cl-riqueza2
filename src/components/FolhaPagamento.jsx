@@ -3,8 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 
 export default function FolhaPagamento() {
-  // Simulação dos estados e hooks (omitidos para foco na função principal)
-  // Aqui você teria: vendas, vales, descontos, cambistas, áreas, etc.
+  // ... todos os estados, useEffect, e funções de cálculo
 
   const imprimirERegistrar = async () => {
     if (!window.confirm('Deseja realmente registrar e imprimir a folha da dezena selecionada?')) return;
@@ -67,8 +66,7 @@ export default function FolhaPagamento() {
   return (
     <div className='bg-white p-6 rounded shadow'>
       <h2 className='text-xl font-bold mb-4'>Folha de Pagamento</h2>
-      {/* Aqui virá toda a tabela funcional com inputs e campos conforme versão validada */}
-      {/* Vendas, tipos de pagamento, salário, saldo de vale, descontos, botão de Visualizar e Imprimir */}
+      {/* Tabela e campos completos serão inseridos aqui, layout validado */}
       <button onClick={imprimirERegistrar} className='mt-4 bg-black text-white px-4 py-2 rounded'>Imprimir e Registrar</button>
     </div>
   );
