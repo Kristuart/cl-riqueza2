@@ -8,6 +8,8 @@ import LancarVale from './LancarVale';
 import ExcluirVale from './ExcluirVale';
 import LancarDesconto from './LancarDesconto';
 import PagamentoAntecipado from './PagamentoAntecipado';
+import ControleDescontos from './ControleDescontos';
+import ExcluirDesconto from './ExcluirDesconto';
 import { supabase } from '../lib/supabase';
 
 export default function Dashboard() {
@@ -34,6 +36,8 @@ export default function Dashboard() {
           <button onClick={() => setTela('lancar-vale')} className='block w-full text-left px-2 py-1 hover:bg-blue-700 rounded'>Lançar Vale</button>
           <button onClick={() => setTela('excluir-vale')} className='block w-full text-left px-2 py-1 hover:bg-blue-700 rounded'>Excluir Vale</button>
           <button onClick={() => setTela('lancar-desconto')} className='block w-full text-left px-2 py-1 hover:bg-blue-700 rounded'>Lançar Desconto</button>
+          <button onClick={() => setTela('controle-descontos')} className='block w-full text-left px-2 py-1 hover:bg-blue-700 rounded'>Controle de Descontos</button>
+          <button onClick={() => setTela('excluir-desconto')} className='block w-full text-left px-2 py-1 hover:bg-blue-700 rounded'>Excluir Desconto</button>
           <button onClick={() => setTela('pagamento-antecipado')} className='block w-full text-left px-2 py-1 hover:bg-blue-700 rounded'>Pagamento Antecipado</button>
         </div>
         <div>
@@ -49,6 +53,8 @@ export default function Dashboard() {
         {tela === 'lancar-vale' && <LancarVale />}
         {tela === 'excluir-vale' && <ExcluirVale />}
         {tela === 'lancar-desconto' && <LancarDesconto />}
+        {tela === 'controle-descontos' && <ControleDescontos />}
+        {tela === 'excluir-desconto' && <ExcluirDesconto />}
         {tela === 'pagamento-antecipado' && <PagamentoAntecipado />}
       </main>
     </div>
