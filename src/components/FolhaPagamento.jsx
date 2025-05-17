@@ -210,8 +210,27 @@ export default function FolhaPagamento() {
               })}
             </tbody>
           </table>
-          <div className='mt-4 flex justify-end'>
+          
+          <div className='mt-4 flex justify-end gap-2'>
+            <button className='bg-gray-500 text-white px-4 py-2 rounded' onClick={() => {
+              const linhas = cambistas.map(c => calcularLinha(c));
+              const totalLiquido = linhas.reduce((acc, l) => acc + l.liquido, 0);
+              const html = `<html><head><title>Visualização</title><style>body{font-family:Arial;padding:20px;}table{width:100%;border-collapse:collapse;}th,td{border:1px solid #000;padding:6px;}</style></head><body>
+                <h2>CL Riqueza - Área ${areaSelecionada} (${dataDezena})</h2><table><thead><tr><th>Código</th><th>Nome</th><th>Salário</th><th>Vale</th><th>Desconto</th><th>Líquido</th></tr></thead><tbody>
+                ${linhas.map(l => `<tr><td>${l.codigo}</td><td>${l.nome}</td><td>R$ ${l.salario.toFixed(2)}</td><td>R$ ${l.valeLancado.toFixed(2)}</td><td>R$ ${l.desconto.toFixed(2)}</td><td>R$ ${l.liquido.toFixed(2)}</td></tr>`).join('')}
+                <tr><td colspan="5"><strong>Total líquido da área:</strong></td><td><strong>R$ ${totalLiquido.toFixed(2)}</strong></td></tr>
+                </tbody></table></body></html>`;
+              const w = window.open('', '_blank');
+              w.document.write(html);
+              w.document.close();
+            }}>
+              Visualizar Folha
+            </button>
             <button className='bg-black text-white px-4 py-2 rounded' onClick={imprimirERegistrar}>
+              Imprimir e Registrar
+            </button>
+          </div>
+
               Imprimir e Registrar
             </button>
           </div>
