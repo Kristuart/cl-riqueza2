@@ -55,32 +55,16 @@ export default function FolhaPagamento() {
     return 0;
   };
 
-  
   const calcularLinha = (c) => {
-    const vendaRaw = vendas[c.codigo] || '0';
-    const valeRaw = vales[c.codigo] || '0';
-    const venda = parseFloat(vendaRaw.replace(',', '.')) || 0;
-    const vale = parseFloat(valeRaw.replace(',', '.')) || 0;
-
     const venda = parseFloat(vendas[c.codigo]) || 0;
     const vale = parseFloat(vales[c.codigo]) || 0;
-    const salario = getSalario(c, venda); const saldoVale = calcularSaldoVale(c.codigo);
+    const salario = getSalario(c, venda);
     const desconto = descontosPendentes[c.codigo] || 0;
     const liquido = salario - vale - desconto;
-    return { codigo: c.codigo, nome: c.nome, tipo_pagamento: c.tipo, venda, salario, vale_lancado: vale, desconto, saldo_vale: saldoVale, liquido: Math.max(liquido, 0) };
-  };
-
-  
-  const calcularSaldoVale = (codigo) => {
-    const valesDoCodigo = Object.keys(vales)
-      .filter(k => k === codigo)
-      .map(k => parseFloat(vales[k].replace(',', '.')))
-      .reduce((a, b) => a + b, 0);
-    return valesDoCodigo || 0;
+    return { codigo: c.codigo, nome: c.nome, tipo_pagamento: c.tipo, venda, salario, vale_lancado: vale, desconto, liquido: Math.max(liquido, 0) };
   };
 
   const gerarFolha = () => {
-
     const folha = cambistas.map(c => calcularLinha(c));
     setFolhaGerada(folha);
   };
@@ -122,7 +106,7 @@ export default function FolhaPagamento() {
                   <th className='p-2'>Venda</th>
                   <th className='p-2'>Tipo</th>
                   <th className='p-2'>Salário</th>
-                  <th className='p-2'>Saldo de Vale</th><th className='p-2'>Vale Lançado</th>
+                  <th className='p-2'>Vale</th>
                   <th className='p-2'>Desconto</th>
                   <th className='p-2'>Líquido</th>
                 </tr>
