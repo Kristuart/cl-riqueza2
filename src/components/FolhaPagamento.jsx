@@ -82,7 +82,6 @@ export default function FolhaPagamento() {
   };
 
   const imprimirERegistrar = async () => {
-    if (!window.confirm('Deseja realmente registrar e imprimir a folha da dezena selecionada?')) return;
     const linhas = cambistas.map(c => calcularLinha(c));
     const totalLiquido = linhas.reduce((acc, l) => acc + l.liquido, 0);
 
@@ -222,11 +221,8 @@ export default function FolhaPagamento() {
             </tbody>
           </table>
         </div>
-        <div className='mt-4 flex justify-end'>
-          <button className='bg-black text-white px-4 py-2 rounded' onClick={imprimirERegistrar}>
-            Imprimir e Registrar
-          </button>
-        </div><div className='mt-2 flex justify-end gap-2'>
+
+        <div className='mt-4 flex justify-end gap-2'>
           <button className='bg-gray-700 text-white px-4 py-2 rounded' onClick={() => {
             const linhas = cambistas.map(c => calcularLinha(c));
             const totalLiquido = linhas.reduce((acc, l) => acc + l.liquido, 0);
@@ -252,7 +248,16 @@ export default function FolhaPagamento() {
           }}>
             Visualizar Folha
           </button>
+          <button className='bg-black text-white px-4 py-2 rounded' onClick={imprimirERegistrar}>
+            Imprimir e Registrar
+          </button>
         </div>
+
+          <button className='bg-black text-white px-4 py-2 rounded' onClick={imprimirERegistrar}>
+            Imprimir e Registrar
+          </button>
+        </div>
+        </>
       )}
     </div>
   );
