@@ -87,7 +87,7 @@ export default function FolhaPagamento() {
   };
 
   
-  const gerarFolha = () => {
+  const visualizarFolha = () => {
     const folha = cambistas.map(c => calcularLinha(c));
     const totalLiquido = folha.reduce((acc, item) => acc + item.liquido, 0);
     const html = `
@@ -136,8 +136,12 @@ export default function FolhaPagamento() {
         </body>
       </html>`;
     const win = window.open('', '_blank');
-    win.document.write(html);
-    win.document.close();
+    if (win) {
+      win.document.write(html);
+      win.document.close();
+    } else {
+      alert("Por favor, permita pop-ups para visualizar a folha.");
+    }
   };
 
     const folha = cambistas.map(c => calcularLinha(c));
@@ -212,7 +216,7 @@ export default function FolhaPagamento() {
             </table>
           </div>
           <div className='mt-4 flex justify-between'>
-            <button className='bg-green-600 text-white px-4 py-2 rounded' onClick={gerarFolha}>Gerar Folha</button>
+            <button className='bg-green-600 text-white px-4 py-2 rounded' onClick={visualizarFolha}>Gerar Folha</button>
             <button className='bg-black text-white px-4 py-2 rounded' onClick={registrarFolha}>Registrar e Imprimir</button>
           </div>
         </>
