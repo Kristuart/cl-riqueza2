@@ -7,9 +7,10 @@ import ControleVales from './ControleVales';
 import LancarVale from './LancarVale';
 import ExcluirVale from './ExcluirVale';
 import LancarDesconto from './LancarDesconto';
-import PagamentoAntecipado from './PagamentoAntecipado';
 import ControleDescontos from './ControleDescontos';
 import ExcluirDesconto from './ExcluirDesconto';
+import PagamentoAntecipado from './PagamentoAntecipado';
+import FolhaPagamento from './FolhaPagamento';
 import { supabase } from '../lib/supabase';
 
 export default function Dashboard() {
@@ -41,6 +42,10 @@ export default function Dashboard() {
           <button onClick={() => setTela('pagamento-antecipado')} className='block w-full text-left px-2 py-1 hover:bg-blue-700 rounded'>Pagamento Antecipado</button>
         </div>
         <div>
+          <p className='font-semibold text-sm mb-1 mt-6'>FOLHA</p>
+          <button onClick={() => setTela('folha-pagamento')} className='block w-full text-left px-2 py-1 hover:bg-blue-700 rounded'>Folha de Pagamento</button>
+        </div>
+        <div>
           <p className='font-semibold text-sm mb-1 mt-6'>SAIR</p>
           <button onClick={logout} className='block w-full text-left px-2 py-1 hover:bg-blue-700 rounded'>Logout</button>
         </div>
@@ -56,6 +61,7 @@ export default function Dashboard() {
         {tela === 'controle-descontos' && <ControleDescontos />}
         {tela === 'excluir-desconto' && <ExcluirDesconto />}
         {tela === 'pagamento-antecipado' && <PagamentoAntecipado />}
+        {tela === 'folha-pagamento' && <FolhaPagamento />}
       </main>
     </div>
   );
