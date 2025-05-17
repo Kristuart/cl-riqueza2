@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 
@@ -61,27 +62,27 @@ export default function FolhaPagamento() {
       const faixa = dadosMeta.find(m => {
         const min = parseFloat(m.min);
         const max = parseFloat(m.max);
-        return venda >= min && venda <= max;
+          return venda >= min && venda <= max;
       });
       const valorMeta = faixa ? parseFloat(faixa.valor) : 0;
       if (cambista.tipo === 'meta') return valorMeta;
-      return Math.max(valorMeta, minimo);
+        return Math.max(valorMeta, minimo);
     }
 
-    return 0;
+      return 0;
   };
 
     if (cambista.tipo === 'fixo') return parseFloat(cambista.salario || 0);
     if (cambista.tipo === 'meta') {
       const valorMeta = dadosMeta.find(m => venda >= m.min && venda <= m.max);
-      return valorMeta ? parseFloat(valorMeta.valor) : 0;
+        return valorMeta ? parseFloat(valorMeta.valor) : 0;
     }
     if (cambista.tipo === 'fixo_meta') {
       const valorMeta = dadosMeta.find(m => venda >= m.min && venda <= m.max);
       const valorMetaNum = valorMeta ? parseFloat(valorMeta.valor) : 0;
-      return Math.max(valorMetaNum, parseFloat(cambista.salario_minimo || 0));
+        return Math.max(valorMetaNum, parseFloat(cambista.salario_minimo || 0));
     }
-    return 0;
+      return 0;
   };
 
   const calcularLinha = (c) => {
@@ -93,7 +94,7 @@ export default function FolhaPagamento() {
     const desconto = descontosPendentes[c.codigo] || 0;
     const saldoValeAtual = saldosVale[c.codigo] || 0;
     const liquido = salario - vale - desconto;
-    return {
+      return {
       codigo: c.codigo,
       nome: c.nome,
       tipo_pagamento: c.tipo,
@@ -123,7 +124,7 @@ export default function FolhaPagamento() {
     if (!error) alert("Folha registrada com sucesso!");
   };
 
-  return (
+    return (
     <div className='bg-gray-100 p-6 rounded shadow-md'>
       <h2 className='text-xl font-bold mb-4'>Folha de Pagamento</h2>
       <div className='flex flex-col md:flex-row gap-4 mb-4'>
@@ -157,7 +158,7 @@ export default function FolhaPagamento() {
               <tbody>
                 {cambistas.map(c => {
                   const dados = calcularLinha(c);
-                  return (
+                    return (
                     <tr key={c.codigo}>
                       <td className='border p-2'>{c.codigo}</td>
                       <td className='border p-2'>{c.nome}</td>
@@ -186,3 +187,4 @@ export default function FolhaPagamento() {
       )}
     </div>
   );
+}
