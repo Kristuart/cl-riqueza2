@@ -9,8 +9,9 @@ export default function FolhaPagamento() {
   const [cambistas, setCambistas] = useState([]);
   const [vendas, setVendas] = useState({});
   const [vales, setVales] = useState({});
-  const [saldosVale, setSaldosVale] = useState({});
+  const [descontos, setDescontos] = useState({});
   const [dadosMeta, setDadosMeta] = useState([]);
+  const [saldosVale, setSaldosVale] = useState({});
 
   useEffect(() => {
     async function init() {
@@ -25,6 +26,13 @@ export default function FolhaPagamento() {
         saldoMap[v.codigo] += parseFloat(v.valor);
       });
       setSaldosVale(saldoMap);
+      const { data: descontosData } = await supabase.from('descontos').select('*');
+      const descontoMap = {};
+      descontosData.forEach(d => {
+        if (!descontoMap[d.codigo]) descontoMap[d.codigo] = 0;
+        descontoMap[d.codigo] += parseFloat(d.valor);
+      });
+      setDescontos(descontoMap);
     }
     init();
   }, []);
@@ -57,6 +65,92 @@ export default function FolhaPagamento() {
     setCambistas(data || []);
   };
 
+  const calcularLinha = (c) => {
+    const venda = parseFloat((vendas[c.codigo] || '0').replace(',', '.')) || 0;
+    const valeLancado = parseFloat((vales[c.codigo] || '0').replace(',', '.')) || 0;
+    const desconto = descontos[c.codigo] || 0;
+    const salario = getSalario(c, venda);
+    const liquido = salario - valeLancado - desconto;
+    return {
+      codigo: c.codigo,
+      nome: c.nome,
+      salario,
+      valeLancado,
+      desconto,
+      liquido: liquido < 0 ? 0 : liquido
+    };
+  };
+
+  const imprimirERegistrar = async () => {
+    const linhas = cambistas.map(c => calcularLinha(c));
+    const totalLiquido = linhas.reduce((acc, l) => acc + l.liquido, 0);
+
+    // REGISTRAR no banco
+    for (let l of linhas) {
+      await supabase.from('folha_pagamento').insert({
+        codigo: l.codigo,
+        nome: l.nome,
+        area: areaSelecionada,
+        data: dataDezena,
+        salario: l.salario,
+        vale_lancado: l.valeLancado,
+        desconto: l.desconto,
+        liquido: l.liquido
+      });
+    }
+
+    // VISUALIZAÇÃO
+    const html = `
+      <html>
+      <head>
+        <title>Folha ${areaSelecionada} - ${dataDezena}</title>
+        <style>
+          body { font-family: Arial, sans-serif; color: #000; padding: 20px; }
+          table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+          th, td { border: 1px solid #000; padding: 8px; text-align: left; }
+          th { background-color: #f0f0f0; }
+          h2 { margin-bottom: 0; }
+        </style>
+      </head>
+      <body>
+        <h2>CL Riqueza - Área ${areaSelecionada} (${dataDezena})</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Código</th>
+              <th>Nome</th>
+              <th>Salário</th>
+              <th>Vale</th>
+              <th>Desconto</th>
+              <th>Líquido</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${linhas.map(l => `
+              <tr>
+                <td>${l.codigo}</td>
+                <td>${l.nome}</td>
+                <td>R$ ${l.salario.toFixed(2)}</td>
+                <td>R$ ${l.valeLancado.toFixed(2)}</td>
+                <td>R$ ${l.desconto.toFixed(2)}</td>
+                <td>R$ ${l.liquido.toFixed(2)}</td>
+              </tr>
+            `).join('')}
+            <tr>
+              <td colspan="5"><strong>Total líquido da área:</strong></td>
+              <td><strong>R$ ${totalLiquido.toFixed(2)}</strong></td>
+            </tr>
+          </tbody>
+        </table>
+        <script>window.print()</script>
+      </body>
+      </html>
+    `;
+    const newWin = window.open('', '_blank');
+    newWin.document.write(html);
+    newWin.document.close();
+  };
+
   return (
     <div className='bg-white p-6 rounded shadow'>
       <h2 className='text-xl font-bold mb-4'>Folha de Pagamento</h2>
@@ -72,6 +166,7 @@ export default function FolhaPagamento() {
       </div>
 
       {cambistas.length > 0 && (
+        <>
         <div className='overflow-auto'>
           <table className='table-auto w-full text-sm bg-white rounded shadow'>
             <thead>
@@ -83,6 +178,7 @@ export default function FolhaPagamento() {
                 <th className='p-2'>Salário</th>
                 <th className='p-2'>Saldo Vale</th>
                 <th className='p-2'>Vale Lançado</th>
+                <th className='p-2'>Desconto</th>
                 <th className='p-2'>Líquido</th>
               </tr>
             </thead>
@@ -92,7 +188,8 @@ export default function FolhaPagamento() {
                 const salario = getSalario(c, venda);
                 const saldoVale = saldosVale[c.codigo] || 0;
                 const valeLancado = parseFloat((vales[c.codigo] || '0').replace(',', '.')) || 0;
-                const liquido = salario - valeLancado;
+                const desconto = descontos[c.codigo] || 0;
+                const liquido = salario - valeLancado - desconto;
                 return (
                   <tr key={c.codigo}>
                     <td className='border p-2'>{c.codigo}</td>
@@ -105,7 +202,7 @@ export default function FolhaPagamento() {
                         onChange={e => setVendas({ ...vendas, [c.codigo]: e.target.value })}
                       />
                     </td>
-                    <td className='border p-2'>{c.tipo}</td>
+                    <td className='border p-2'>{(c.tipo || '').toUpperCase()}</td>
                     <td className='border p-2 font-bold'>R$ {salario.toFixed(2)}</td>
                     <td className={`border p-2 font-bold ${saldoVale > 0 ? 'text-red-600' : 'text-green-600'}`}>R$ {saldoVale.toFixed(2)}</td>
                     <td className='border p-2'>
@@ -116,6 +213,7 @@ export default function FolhaPagamento() {
                         onChange={e => setVales({ ...vales, [c.codigo]: e.target.value })}
                       />
                     </td>
+                    <td className='border p-2'>R$ {desconto.toFixed(2)}</td>
                     <td className='border p-2 font-bold'>R$ {liquido.toFixed(2)}</td>
                   </tr>
                 );
@@ -123,6 +221,12 @@ export default function FolhaPagamento() {
             </tbody>
           </table>
         </div>
+        <div className='mt-4 flex justify-end'>
+          <button className='bg-black text-white px-4 py-2 rounded' onClick={imprimirERegistrar}>
+            Imprimir e Registrar
+          </button>
+        </div>
+        </>
       )}
     </div>
   );
