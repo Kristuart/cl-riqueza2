@@ -64,6 +64,64 @@ export default function FolhaPagamento() {
     return 0;
   };
 
+  
+  const visualizarFolha = () => {
+    const folha = cambistas.map(c => calcularLinha(c));
+    const totalLiquido = folha.reduce((acc, item) => acc + item.liquido, 0);
+    const html = `
+      <html>
+        <head>
+          <title>Folha de Pagamento - ${areaSelecionada}</title>
+          <style>
+            body { font-family: Arial, sans-serif; color: #000; background: #fff; padding: 20px; }
+            table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+            th, td { border: 1px solid #000; padding: 6px; font-size: 14px; }
+            th { background: #eee; }
+            tfoot td { font-weight: bold; }
+          </style>
+        </head>
+        <body>
+          <h2>Folha de Pagamento - Área ${areaSelecionada} (${dataDezena})</h2>
+          <table>
+            <thead>
+              <tr>
+                <th>Código</th>
+                <th>Nome</th>
+                <th>Salário</th>
+                <th>Vale</th>
+                <th>Desconto</th>
+                <th>Líquido</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${folha.map(f => `
+                <tr>
+                  <td>${f.codigo}</td>
+                  <td>${f.nome}</td>
+                  <td>R$ ${f.salario.toFixed(2)}</td>
+                  <td>R$ ${f.vale_lancado.toFixed(2)}</td>
+                  <td>R$ ${f.desconto.toFixed(2)}</td>
+                  <td>R$ ${f.liquido.toFixed(2)}</td>
+                </tr>`).join('')}
+            </tbody>
+            <tfoot>
+              <tr>
+                <td colspan="5">Total líquido da área:</td>
+                <td>R$ ${totalLiquido.toFixed(2)}</td>
+              </tr>
+            </tfoot>
+          </table>
+        </body>
+      </html>`;
+    const win = window.open('', '_blank');
+    if (win) {
+      win.document.write(html);
+      win.document.close();
+    } else {
+      alert("Por favor, permita pop-ups para visualizar a folha.");
+    }
+  };
+
   const calcularLinha = (c) => {
     const vendaRaw = vendas[c.codigo] || '0';
     const valeRaw = valesLançados[c.codigo] || '0';
