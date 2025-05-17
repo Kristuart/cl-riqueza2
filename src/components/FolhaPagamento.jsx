@@ -51,26 +51,30 @@ export default function FolhaPagamento() {
   };
 
   
-  const getSalario = (cambista, venda) => {
-    const v = parseFloat(venda);
+  const getSalario = (cambista, vendaRaw) => {
+    const venda = parseFloat(String(vendaRaw).replace(',', '.')) || 0;
     if (cambista.tipo === 'fixo') return parseFloat(cambista.salario || 0);
+
     if (cambista.tipo === 'meta') {
-      const valorMeta = dadosMeta.find(m => {
+      const faixa = dadosMeta.find(m => {
         const min = parseFloat(m.min);
         const max = parseFloat(m.max);
-        return v >= min && v <= max;
+        return venda >= min && venda <= max;
       });
-      return valorMeta ? parseFloat(valorMeta.valor) : 0;
+      return faixa ? parseFloat(faixa.valor) : 0;
     }
+
     if (cambista.tipo === 'fixo_meta') {
-      const valorMeta = dadosMeta.find(m => {
+      const faixa = dadosMeta.find(m => {
         const min = parseFloat(m.min);
         const max = parseFloat(m.max);
-        return v >= min && v <= max;
+        return venda >= min && venda <= max;
       });
-      const valorMetaNum = valorMeta ? parseFloat(valorMeta.valor) : 0;
-      return Math.max(valorMetaNum, parseFloat(cambista.salario_minimo || 0));
+      const valorMeta = faixa ? parseFloat(faixa.valor) : 0;
+      const minimo = parseFloat(cambista.salario_minimo || 0);
+      return Math.max(valorMeta, minimo);
     }
+
     return 0;
   };
 
