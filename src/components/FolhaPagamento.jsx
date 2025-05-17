@@ -50,7 +50,30 @@ export default function FolhaPagamento() {
     setSaldosVale(saldos);
   };
 
+  
   const getSalario = (cambista, venda) => {
+    const v = parseFloat(venda);
+    if (cambista.tipo === 'fixo') return parseFloat(cambista.salario || 0);
+    if (cambista.tipo === 'meta') {
+      const valorMeta = dadosMeta.find(m => {
+        const min = parseFloat(m.min);
+        const max = parseFloat(m.max);
+        return v >= min && v <= max;
+      });
+      return valorMeta ? parseFloat(valorMeta.valor) : 0;
+    }
+    if (cambista.tipo === 'fixo_meta') {
+      const valorMeta = dadosMeta.find(m => {
+        const min = parseFloat(m.min);
+        const max = parseFloat(m.max);
+        return v >= min && v <= max;
+      });
+      const valorMetaNum = valorMeta ? parseFloat(valorMeta.valor) : 0;
+      return Math.max(valorMetaNum, parseFloat(cambista.salario_minimo || 0));
+    }
+    return 0;
+  };
+
     if (cambista.tipo === 'fixo') return parseFloat(cambista.salario || 0);
     if (cambista.tipo === 'meta') {
       const valorMeta = dadosMeta.find(m => venda >= m.min && venda <= m.max);
@@ -62,64 +85,6 @@ export default function FolhaPagamento() {
       return Math.max(valorMetaNum, parseFloat(cambista.salario_minimo || 0));
     }
     return 0;
-  };
-
-  
-  const visualizarFolha = () => {
-    const folha = cambistas.map(c => calcularLinha(c));
-    const totalLiquido = folha.reduce((acc, item) => acc + item.liquido, 0);
-    const html = `
-      <html>
-        <head>
-          <title>Folha de Pagamento - ${areaSelecionada}</title>
-          <style>
-            body { font-family: Arial, sans-serif; color: #000; background: #fff; padding: 20px; }
-            table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-            th, td { border: 1px solid #000; padding: 6px; font-size: 14px; }
-            th { background: #eee; }
-            tfoot td { font-weight: bold; }
-          </style>
-        </head>
-        <body>
-          <h2>Folha de Pagamento - Área ${areaSelecionada} (${dataDezena})</h2>
-          <table>
-            <thead>
-              <tr>
-                <th>Código</th>
-                <th>Nome</th>
-                <th>Salário</th>
-                <th>Vale</th>
-                <th>Desconto</th>
-                <th>Líquido</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${folha.map(f => `
-                <tr>
-                  <td>${f.codigo}</td>
-                  <td>${f.nome}</td>
-                  <td>R$ ${f.salario.toFixed(2)}</td>
-                  <td>R$ ${f.vale_lancado.toFixed(2)}</td>
-                  <td>R$ ${f.desconto.toFixed(2)}</td>
-                  <td>R$ ${f.liquido.toFixed(2)}</td>
-                </tr>`).join('')}
-            </tbody>
-            <tfoot>
-              <tr>
-                <td colspan="5">Total líquido da área:</td>
-                <td>R$ ${totalLiquido.toFixed(2)}</td>
-              </tr>
-            </tfoot>
-          </table>
-        </body>
-      </html>`;
-    const win = window.open('', '_blank');
-    if (win) {
-      win.document.write(html);
-      win.document.close();
-    } else {
-      alert("Por favor, permita pop-ups para visualizar a folha.");
-    }
   };
 
   const calcularLinha = (c) => {
@@ -217,7 +182,7 @@ export default function FolhaPagamento() {
             </table>
           </div>
           <div className='mt-4 flex justify-between'>
-            <button className='bg-green-600 text-white px-4 py-2 rounded' onClick={visualizarFolha}>Visualizar Folha</button>
+            <button className='bg-green-600 text-white px-4 py-2 rounded' onClick={gerarFolha}>Gerar Folha</button>
             <button className='bg-black text-white px-4 py-2 rounded' onClick={registrarFolha}>Registrar e Imprimir</button>
           </div>
         </>
